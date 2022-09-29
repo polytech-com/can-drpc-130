@@ -3,8 +3,8 @@
 
 #include <array>
 #include <cstdint>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include <boost/crc.hpp>
 
@@ -27,7 +27,7 @@ public:
         ReceiveData = 0x36,
     };
 
-    CanPacket(Command command, std::vector<uint8_t> &data)
+    CanPacket(Command command, std::vector<uint8_t>& data)
     {
         setCommandData(command, data);
     }
@@ -42,7 +42,7 @@ public:
         return 0;
     }
 
-    void setCommandData(Command cmd, std::vector<uint8_t> &data)
+    void setCommandData(Command cmd, std::vector<uint8_t>& data)
     {
         m_data.insert(m_data.end(), s_header.begin(), s_header.end());
         m_data.push_back(cmd);
@@ -68,7 +68,7 @@ public:
         m_data.push_back(data);
     }
 
-    std::vector<uint8_t> &data()
+    std::vector<uint8_t>& data()
     {
         return m_data;
     }
@@ -131,15 +131,13 @@ protected:
     boost::crc_optimal<8, 0x07, 0x00, 0x00> m_crc;
 };
 
-class CanBaudRatePacket : public CanPacket
-{
+class CanBaudRatePacket : public CanPacket {
 public:
     CanBaudRatePacket(uint32_t baudRate)
     {
-        std::vector<uint8_t> data {0x00, 0x00};
+        std::vector<uint8_t> data { 0x00, 0x00 };
 
-        switch (baudRate)
-        {
+        switch (baudRate) {
         case 50000:
             data[0] = 0x06;
             break;
@@ -166,10 +164,9 @@ public:
     virtual ~CanBaudRatePacket() = default;
 };
 
-class CanDataPacket : public CanPacket
-{
+class CanDataPacket : public CanPacket {
 public:
-    CanDataPacket(bool extendedMode, uint8_t length, uint32_t id, std::array<uint8_t, 8> &payload)
+    CanDataPacket(bool extendedMode, uint8_t length, uint32_t id, std::array<uint8_t, 8>& payload)
     {
         std::vector<uint8_t> data;
         std::array<uint8_t, 4> idArray;
@@ -204,4 +201,4 @@ public:
     virtual ~CanDataPacket() = default;
 };
 
-}
+} // namespace Drpc130

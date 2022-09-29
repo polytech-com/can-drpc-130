@@ -12,8 +12,7 @@
 
 using namespace boost::asio;
 
-struct SocketCanFrame
-{
+struct SocketCanFrame {
     canary::frame_header header;
     std::array<std::uint8_t, 8> payload;
 };
@@ -22,14 +21,14 @@ using SocketCanReadCallback = std::function<void(SocketCanFrame&)>;
 
 class SocketCanInterface {
 public:
-    SocketCanInterface(io_context &ioContext, std::string &deviceName)
+    SocketCanInterface(io_context& ioContext, std::string& deviceName)
         : m_socket(ioContext, canary::raw::endpoint(canary::get_interface_index(deviceName)))
     {
     }
 
     virtual ~SocketCanInterface() = default;
 
-    void write(SocketCanFrame &frame)
+    void write(SocketCanFrame& frame)
     {
         m_socket.send(canary::net::buffer(&frame, sizeof(frame)));
     }
@@ -53,8 +52,7 @@ private:
 
     void read()
     {
-        m_socket.async_receive(canary::net::buffer(&m_frame, sizeof(m_frame)), boost::bind(&SocketCanInterface::readCallback, this, 
-            boost::asio::placeholders::error));
+        m_socket.async_receive(canary::net::buffer(&m_frame, sizeof(m_frame)), boost::bind(&SocketCanInterface::readCallback, this, boost::asio::placeholders::error));
     }
 
     SocketCanFrame m_frame;

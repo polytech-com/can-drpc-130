@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 project(can-drpc-130 CXX)
 
 include(FetchContent)
+include(cmake/clang-format.cmake)
 
 FetchContent_Declare(
     canary
