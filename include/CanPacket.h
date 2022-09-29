@@ -100,6 +100,7 @@ public:
             packetLength += 14;
             break;
         case GetVersionResponse:
+        case SetBaudRateRequest:
         case SetBaudRateResponse:
             packetLength += 2;
             break;
