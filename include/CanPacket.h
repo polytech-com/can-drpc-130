@@ -52,9 +52,17 @@ public:
         m_buffer.insert(m_buffer.end(), s_stop.begin(), s_stop.end());
     }
 
+    std::vector<uint8_t> commandData()
+    {
+        if (m_buffer.size() >= s_packetLengthMin)
+            return std::vector<uint8_t>(m_buffer.begin() + s_header.size() + sizeof(command()), m_buffer.end() - sizeof(checksum()) - s_stop.size());
+
+        return {};
+    }
+
     void addData(uint8_t data)
     {
-        if (m_buffer.size() > s_frameLengthMax)
+        if (m_buffer.size() > s_packetLengthMax)
             m_buffer.clear();
 
         if (valid() || ((m_buffer.size() < s_header.size()) && (data != s_header.at(m_buffer.size()))))
@@ -63,17 +71,9 @@ public:
         m_buffer.push_back(data);
     }
 
-    std::vector<uint8_t> &data()
+    std::vector<uint8_t> &buffer()
     {
         return m_buffer;
-    }
-
-    std::vector<uint8_t> commandData()
-    {
-        if (m_buffer.size() >= s_frameLengthMin)
-            return std::vector<uint8_t>(m_buffer.begin() + s_header.size() + sizeof(command()), m_buffer.end() - sizeof(checksum()) - s_stop.size());
-
-        return {};
     }
 
     bool valid()
@@ -92,22 +92,22 @@ public:
 
     uint8_t length() const
     {
-        uint8_t frameLength = s_frameLengthMin;
+        uint8_t packetLength = s_packetLengthMin;
 
         switch (command()) {
         case SetDataRequest:
         case ReceiveData:
-            frameLength += 14;
+            packetLength += 14;
             break;
         case GetVersionResponse:
         case SetBaudRateResponse:
-            frameLength += 2;
+            packetLength += 2;
             break;
         default:
             break;
         }
 
-        return frameLength;
+        return packetLength;
     }
 
     const uint8_t checksum()
@@ -121,8 +121,8 @@ public:
     }
 
 private:
-    static constexpr uint8_t s_frameLengthMin = 6;
-    static constexpr uint8_t s_frameLengthMax = 33 + s_frameLengthMin;
+    static constexpr uint8_t s_packetLengthMin = 6;
+    static constexpr uint8_t s_packetLengthMax = 33 + s_packetLengthMin;
     static constexpr std::array<uint8_t, 2> s_header = { 0x24, 0x43 };
     static constexpr std::array<uint8_t, 2> s_stop = { 0x0A, 0x0D };
 
@@ -163,6 +163,26 @@ public:
     }
 
     virtual ~CanBaudRatePacket() = default;
+};
+
+class CanDataPacket : public CanPacket
+{
+public:
+    CanDataPacket(bool extendedMode, uint8_t length, uint32_t id, std::array<uint8_t, 8> &payload)
+    {
+        std::vector<uint8_t> data;
+        std::array<uint8_t, 4> idArray;
+        memcpy(idArray.data(), &id, idArray.size());
+
+        data.push_back(0);
+        data.push_back((extendedMode << 7) | length);
+        data.insert(data.end(), idArray.begin(), idArray.end());
+        data.insert(data.end(), payload.begin(), payload.end());
+
+        setCommandData(SetDataRequest, data);
+    }
+
+    virtual ~CanDataPacket() = default;
 };
 
 }

@@ -33,13 +33,14 @@ int main(int argc, char** argv) {
     CanPacket packet;
     boost::asio::io_context ioContext;
     auto work = boost::asio::make_work_guard(ioContext);
+
     SerialInterface serial(ioContext, serialDevice, 115200);
-    //SocketCanInterface can(canDevice);
+    SocketCanInterface can(ioContext, canDevice);
 
     CanBaudRatePacket baudRatePacket(std::stoi(baudRate));
-    serial.write(baudRatePacket.data());
+    serial.write(baudRatePacket.buffer());
 
-    serial.read([&packet](std::span<uint8_t> buffer) {
+    serial.read([&packet, &can](std::span<uint8_t> buffer) {
         for (const uint8_t data : buffer) {
             packet.addData(data);
             if (packet.valid()) {

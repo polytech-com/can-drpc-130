@@ -26,6 +26,7 @@ public:
         : m_socket(ioContext, canary::raw::endpoint(canary::get_interface_index(deviceName)))
     {
     }
+
     virtual ~SocketCanInterface() = default;
 
     void write(SocketCanFrame &frame)
@@ -40,7 +41,7 @@ public:
     }
 
 private:
-    void readCallback(const boost::system::error_code& error, std::size_t bytes)
+    void readCallback(const boost::system::error_code& error)
     {
         if (!error) {
             if (m_readCallback)
@@ -53,7 +54,7 @@ private:
     void read()
     {
         m_socket.async_receive(canary::net::buffer(&m_frame, sizeof(m_frame)), boost::bind(&SocketCanInterface::readCallback, this, 
-            boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+            boost::asio::placeholders::error));
     }
 
     SocketCanFrame m_frame;

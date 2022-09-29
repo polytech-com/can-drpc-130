@@ -19,6 +19,7 @@ public:
         m_serial.set_option(serial_port_base::parity(serial_port_base::parity::none));
         m_serial.set_option(serial_port_base::stop_bits(serial_port_base::stop_bits::one));
     }
+
     virtual ~SerialInterface() = default;
 
     void write(std::vector<uint8_t> &data)
