@@ -77,14 +77,14 @@ TEST_CASE("Test CanDataPacket")
     uint32_t id = 0x01020304;
     bool extendedMode = true;
     static constexpr uint8_t length = 8;
-    std::array<uint8_t, length> payload = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+    std::array<uint8_t, 8> payload = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
 
     CanDataPacket packet(extendedMode, length, id, payload);
 
     CHECK(packet.valid());
     CHECK(packet.command() == CanPacket::Command::SetDataRequest);
-    CHECK_FALSE(packet.commandData().at(0));
-    CHECK(packet.commandData().at(1) == ((extendedMode << 7) | length));
-    CHECK_FALSE(memcmp(packet.commandData().data() + 2, &id, sizeof(id)));
-    CHECK_FALSE(memcmp(packet.commandData().data() + 6, &payload, sizeof(payload)));
+    CHECK(packet.extendedMode() == extendedMode);
+    CHECK(packet.id() == id);
+    CHECK(packet.payload().size() == payload.size());
+    CHECK(std::equal(payload.begin(), payload.end(), packet.payload().begin()));
 }

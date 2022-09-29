@@ -36,54 +36,53 @@ public:
 
     uint8_t command() const
     {
-        if (m_buffer.size() > s_header.size())
-            return m_buffer.at(s_header.size());
+        if (m_data.size() > s_header.size())
+            return m_data.at(s_header.size());
 
         return 0;
     }
 
-    void setCommandData(Command command, std::vector<uint8_t> &data)
+    void setCommandData(Command cmd, std::vector<uint8_t> &data)
     {
-        m_buffer.insert(m_buffer.end(), s_header.begin(), s_header.end());
-        m_buffer.push_back(command);
-        m_buffer.insert(m_buffer.end(), data.begin(), data.end());
-        m_crc.process_bytes(m_buffer.data(), m_buffer.size());
-        m_buffer.push_back(m_crc.checksum());
-        m_buffer.insert(m_buffer.end(), s_stop.begin(), s_stop.end());
+        m_data.insert(m_data.end(), s_header.begin(), s_header.end());
+        m_data.push_back(cmd);
+        m_data.insert(m_data.end(), data.begin(), data.end());
+        m_crc.process_bytes(m_data.data(), m_data.size());
+        m_data.push_back(m_crc.checksum());
+        m_data.insert(m_data.end(), s_stop.begin(), s_stop.end());
     }
 
     std::vector<uint8_t> commandData()
     {
-        if (m_buffer.size() >= s_packetLengthMin)
-            return std::vector<uint8_t>(m_buffer.begin() + s_header.size() + sizeof(command()), m_buffer.end() - sizeof(checksum()) - s_stop.size());
-
-        return {};
+        return m_commandData;
     }
 
     void addData(uint8_t data)
     {
-        if (m_buffer.size() > s_packetLengthMax)
-            m_buffer.clear();
+        if (m_data.size() > s_packetLengthMax)
+            m_data.clear();
 
-        if (valid() || ((m_buffer.size() < s_header.size()) && (data != s_header.at(m_buffer.size()))))
+        if (valid() || ((m_data.size() < s_header.size()) && (data != s_header.at(m_data.size()))))
             return;
 
-        m_buffer.push_back(data);
+        m_data.push_back(data);
     }
 
-    std::vector<uint8_t> &buffer()
+    std::vector<uint8_t> &data()
     {
-        return m_buffer;
+        return m_data;
     }
 
     bool valid()
     {
-        if (command() && (m_buffer.size() == length())) {
+        if (command() && (m_data.size() == length())) {
+            m_commandData.assign(m_data.begin() + s_header.size() + sizeof(command()), m_data.end() - sizeof(checksum()) - s_stop.size());
+
             // Check that the last two bytes is equal to the stop bytes
-            if (!memcmp(m_buffer.data() + m_buffer.size() - s_stop.size(), s_stop.data(), s_stop.size())) {
+            if (!memcmp(m_data.data() + m_data.size() - s_stop.size(), s_stop.data(), s_stop.size())) {
                 m_crc.reset();
-                m_crc.process_bytes(m_buffer.data(), m_buffer.size() - s_stop.size() - sizeof(checksum()));
-                return m_buffer.at(m_buffer.size() - sizeof(checksum()) - s_stop.size()) == m_crc.checksum();
+                m_crc.process_bytes(m_data.data(), m_data.size() - s_stop.size() - sizeof(checksum()));
+                return m_data.at(m_data.size() - sizeof(checksum()) - s_stop.size()) == m_crc.checksum();
             }
         }
 
@@ -118,17 +117,18 @@ public:
 
     void clear()
     {
-        m_buffer.clear();
+        m_data.clear();
     }
 
-private:
+protected:
     static constexpr uint8_t s_packetLengthMin = 6;
     static constexpr uint8_t s_packetLengthMax = 33 + s_packetLengthMin;
     static constexpr std::array<uint8_t, 2> s_header = { 0x24, 0x43 };
     static constexpr std::array<uint8_t, 2> s_stop = { 0x0A, 0x0D };
 
+    std::vector<uint8_t> m_data;
+    std::vector<uint8_t> m_commandData;
     boost::crc_optimal<8, 0x07, 0x00, 0x00> m_crc;
-    std::vector<uint8_t> m_buffer;
 };
 
 class CanBaudRatePacket : public CanPacket
@@ -178,9 +178,27 @@ public:
         data.push_back(0);
         data.push_back((extendedMode << 7) | length);
         data.insert(data.end(), idArray.begin(), idArray.end());
-        data.insert(data.end(), payload.begin(), payload.end());
+        data.insert(data.end(), payload.begin(), payload.begin() + length);
 
         setCommandData(SetDataRequest, data);
+    }
+
+    bool extendedMode()
+    {
+        return (m_commandData.at(1) >> 7) & 0x1;
+    }
+
+    uint32_t id()
+    {
+        uint32_t value;
+        memcpy(&value, m_commandData.data() + 2, sizeof(value));
+
+        return value;
+    }
+
+    std::vector<uint8_t> payload()
+    {
+        return std::vector<uint8_t>(m_commandData.begin() + 6, m_commandData.end());
     }
 
     virtual ~CanDataPacket() = default;

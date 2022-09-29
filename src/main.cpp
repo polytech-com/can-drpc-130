@@ -32,20 +32,30 @@ int main(int argc, char** argv) {
 
     CanPacket packet;
     boost::asio::io_context ioContext;
-    auto work = boost::asio::make_work_guard(ioContext);
+    boost::asio::make_work_guard(ioContext);
 
     SerialInterface serial(ioContext, serialDevice, 115200);
     SocketCanInterface can(ioContext, canDevice);
 
     CanBaudRatePacket baudRatePacket(std::stoi(baudRate));
-    serial.write(baudRatePacket.buffer());
+    serial.write(baudRatePacket.data());
 
     serial.read([&packet, &can](std::span<uint8_t> buffer) {
         for (const uint8_t data : buffer) {
             packet.addData(data);
             if (packet.valid()) {
                 printf("Received packet with command %d\n", packet.command());
-                // FIXME: Handle packet
+                if (packet.command() == CanPacket::Command::ReceiveData) {
+                    SocketCanFrame frame;
+                    CanDataPacket &dataPacket = dynamic_cast<CanDataPacket&>(packet);
+                    auto payload = dataPacket.payload();
+                    frame.header.extended_format(dataPacket.extendedMode());
+                    frame.header.id(dataPacket.id());
+                    frame.header.payload_length(payload.size());
+                    std::copy(payload.begin(), payload.end(), frame.payload.begin());
+                    printf("Sending packet on can interface\n");
+                    can.write(frame);
+                }
             }
         }
     });
