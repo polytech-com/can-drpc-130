@@ -3,12 +3,12 @@
 
 #include <span>
 
+#include <boost/asio.hpp>
+#include <boost/bind/bind.hpp>
+
 #include <canary/frame_header.hpp>
 #include <canary/interface_index.hpp>
 #include <canary/raw.hpp>
-
-#include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
 
 using namespace boost::asio;
 
@@ -40,19 +40,17 @@ public:
     }
 
 private:
-    void readCallback(const boost::system::error_code& error)
+    void readCallback()
     {
-        if (!error) {
-            if (m_readCallback)
-                m_readCallback(m_frame);
+        if (m_readCallback)
+            m_readCallback(m_frame);
 
-            read();
-        }
+        read();
     }
 
     void read()
     {
-        m_socket.async_receive(canary::net::buffer(&m_frame, sizeof(m_frame)), boost::bind(&SocketCanInterface::readCallback, this, boost::asio::placeholders::error));
+        m_socket.async_receive(canary::net::buffer(&m_frame, sizeof(m_frame)), boost::bind(&SocketCanInterface::readCallback, this));
     }
 
     SocketCanFrame m_frame;

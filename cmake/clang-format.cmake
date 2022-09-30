@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.11)
 
 file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch] ${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch]pp)
 file(GLOB_RECURSE INCLUDE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.[ch] ${CMAKE_CURRENT_SOURCE_DIR}/include/*.[ch]pp)

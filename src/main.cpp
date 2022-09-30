@@ -27,9 +27,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    CanPacket packet;
-    boost::asio::io_context ioContext;
-    boost::asio::make_work_guard(ioContext);
+    CanDataPacket packet;
+    boost::asio::io_context ioContext { 2 };
+    auto work = boost::asio::make_work_guard(ioContext);
 
     SerialInterface serial(ioContext, serialDevice, 115200);
     SocketCanInterface can(ioContext, canDevice);
@@ -37,23 +37,35 @@ int main(int argc, char** argv)
     CanBaudRatePacket baudRatePacket(std::stoi(baudRate));
     serial.write(baudRatePacket.data());
 
-    serial.read([&packet, &can](std::span<uint8_t> buffer) {
+    serial.read([&packet, &can, &serial](std::span<uint8_t> buffer) {
         printf("Received serial buffer with length %lu\n", buffer.size());
         for (const uint8_t data : buffer) {
             packet.addData(data);
             if (packet.valid()) {
-                printf("Received serial packet with command %d\n", packet.command());
-                if (packet.command() == CanPacket::Command::ReceiveData) {
+                printf("Received serial packet with command %x\n", packet.command());
+                switch (packet.command()) {
+                case CanPacket::Command::ReceiveData: {
                     SocketCanFrame frame;
-                    CanDataPacket& dataPacket = dynamic_cast<CanDataPacket&>(packet);
-                    auto payload = dataPacket.payload();
-                    frame.header.extended_format(dataPacket.extendedMode());
-                    frame.header.id(dataPacket.id());
+                    auto payload = packet.payload();
+                    frame.header.extended_format(packet.extendedMode());
+                    frame.header.id(packet.id());
                     frame.header.payload_length(payload.size());
                     std::copy(payload.begin(), payload.end(), frame.payload.begin());
                     printf("Sending packet on CAN interface\n");
                     can.write(frame);
+                    break;
                 }
+                case CanPacket::Command::SetDataResponse: {
+                    std::vector<uint8_t> data;
+                    printf("Sending SendDataRequest\n");
+                    CanPacket sendDataPacket(CanPacket::Command::SendDataRequest, data);
+                    serial.write(sendDataPacket.data());
+                    break;
+                }
+                default:
+                    break;
+                }
+                packet.clear();
             }
         }
     });
@@ -62,10 +74,8 @@ int main(int argc, char** argv)
         printf("Received CAN packet with length %lu\n", frame.header.payload_length());
         CanDataPacket packet(frame.header.extended_format(), frame.header.payload_length(),
             frame.header.id(), frame.payload);
-        if (packet.valid()) {
-            printf("Sending packet on serial interface\n");
-            serial.write(packet.data());
-        }
+        printf("Sending SetDataRequest\n");
+        serial.write(packet.data());
     });
 
     ioContext.run();

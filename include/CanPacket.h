@@ -3,7 +3,6 @@
 
 #include <array>
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 #include <boost/crc.hpp>
@@ -118,6 +117,7 @@ public:
     void clear()
     {
         m_data.clear();
+        m_commandData.clear();
     }
 
 protected:
@@ -166,6 +166,8 @@ public:
 
 class CanDataPacket : public CanPacket {
 public:
+    CanDataPacket() = default;
+
     CanDataPacket(bool extendedMode, uint8_t length, uint32_t id, std::array<uint8_t, 8>& payload)
     {
         std::vector<uint8_t> data;
@@ -179,6 +181,8 @@ public:
 
         setCommandData(SetDataRequest, data);
     }
+
+    virtual ~CanDataPacket() = default;
 
     bool extendedMode()
     {
@@ -197,8 +201,6 @@ public:
     {
         return std::vector<uint8_t>(m_commandData.begin() + 6, m_commandData.end());
     }
-
-    virtual ~CanDataPacket() = default;
 };
 
 } // namespace Drpc130
