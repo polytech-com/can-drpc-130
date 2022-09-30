@@ -21,6 +21,9 @@ using SocketCanReadCallback = std::function<void(SocketCanFrame&)>;
 
 class SocketCanInterface {
 public:
+    /// @brief Constructor
+    /// @param ioContext The io_context to be used
+    /// @param deviceName The SocketCAN device to be used
     SocketCanInterface(io_context& ioContext, std::string& deviceName)
         : m_socket(ioContext, canary::raw::endpoint(canary::get_interface_index(deviceName)))
     {
@@ -28,11 +31,15 @@ public:
 
     virtual ~SocketCanInterface() = default;
 
+    /// @brief Writes data on the SocketCAN interface
+    /// @param frame A reference to a SocketCanFrame to be sent
     void write(SocketCanFrame& frame)
     {
         m_socket.send(canary::net::buffer(&frame, sizeof(frame)));
     }
 
+    /// @brief Reads data from the SocketCAN interface
+    /// @param callback A SocketCanReadCallback callback to be called when data is available for reading
     void read(SocketCanReadCallback callback)
     {
         m_readCallback = callback;

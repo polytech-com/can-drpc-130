@@ -26,13 +26,18 @@ public:
         ReceiveData = 0x36,
     };
 
-    CanPacket(Command command, std::vector<uint8_t>& data)
+    /// @brief Constructor
+    /// @param command The command to create
+    /// @param commandData A reference to the data for the command
+    CanPacket(Command command, std::vector<uint8_t>& commandData)
     {
-        setCommandData(command, data);
+        setCommandData(command, commandData);
     }
 
     virtual ~CanPacket() = default;
 
+    /// @brief Returns the command
+    /// @return An uint8_t with the command
     uint8_t command() const
     {
         if (m_data.size() > s_header.size())
@@ -41,21 +46,28 @@ public:
         return 0;
     }
 
-    void setCommandData(Command cmd, std::vector<uint8_t>& data)
+    /// @brief Sets the command data (alternative to constructor with arguments)
+    /// @param command The command to create
+    /// @param commandData A reference to the data for the command
+    void setCommandData(Command cmd, std::vector<uint8_t>& commandData)
     {
         m_data.insert(m_data.end(), s_header.begin(), s_header.end());
         m_data.push_back(cmd);
-        m_data.insert(m_data.end(), data.begin(), data.end());
+        m_data.insert(m_data.end(), commandData.begin(), commandData.end());
         m_crc.process_bytes(m_data.data(), m_data.size());
         m_data.push_back(m_crc.checksum());
         m_data.insert(m_data.end(), s_stop.begin(), s_stop.end());
     }
 
+    /// @brief Returns the command data part of the packet
+    /// @return An std::vector with the command data
     std::vector<uint8_t> commandData()
     {
         return m_commandData;
     }
 
+    /// @brief Adds a data byte to be decoded based on the MCU protocol
+    /// @param data An uint8_t to be added
     void addData(uint8_t data)
     {
         if (m_data.size() > s_packetLengthMax)
@@ -67,11 +79,15 @@ public:
         m_data.push_back(data);
     }
 
+    /// @brief Returns the data
+    /// @return An std::vector reference with the data
     std::vector<uint8_t>& data()
     {
         return m_data;
     }
 
+    /// @brief Checks if the packet is valid. Can be used to find out when a complete packet is ready
+    /// @return A bool telling if the packet is valid
     bool valid()
     {
         if (command() && (m_data.size() == length())) {
@@ -88,6 +104,8 @@ public:
         return false;
     }
 
+    /// @brief Returns the length of the packet
+    /// @return An uint8_t with the length
     uint8_t length() const
     {
         uint8_t packetLength = s_packetLengthMin;
@@ -109,11 +127,14 @@ public:
         return packetLength;
     }
 
+    /// @brief Returns the checksum of the packet (mainly used for testing)
+    /// @return An uint8_t with the checksum
     const uint8_t checksum()
     {
         return m_crc.checksum();
     }
 
+    /// @brief Clears the packet data
     void clear()
     {
         m_data.clear();
@@ -133,6 +154,8 @@ protected:
 
 class CanBaudRatePacket : public CanPacket {
 public:
+    /// @brief Constructor
+    /// @param baudRate The baud rate in bit/s
     CanBaudRatePacket(uint32_t baudRate)
     {
         std::vector<uint8_t> data { 0x00, 0x00 };
@@ -154,7 +177,6 @@ public:
             data[0] = 0x14;
             break;
         default:
-            std::cout << "Defaulting to a baud rate of 10000 bits/sec" << std::endl;
             break;
         }
 
@@ -168,27 +190,36 @@ class CanDataPacket : public CanPacket {
 public:
     CanDataPacket() = default;
 
-    CanDataPacket(bool extendedMode, uint8_t length, uint32_t id, std::array<uint8_t, 8>& payload)
+    /// @brief Constructor
+    /// @param extendedMode Use to select between normal or extended mode
+    /// @param payloadLength The length of the payload
+    /// @param id The frame ID to be used
+    /// @param payload The payload to be sent
+    CanDataPacket(bool extendedMode, uint8_t payloadLength, uint32_t id, std::array<uint8_t, 8>& payload)
     {
         std::vector<uint8_t> data;
         std::array<uint8_t, 4> idArray;
         memcpy(idArray.data(), &id, idArray.size());
 
         data.push_back(0);
-        data.push_back((extendedMode << 7) | length);
+        data.push_back((extendedMode << 7) | payloadLength);
         data.insert(data.end(), idArray.begin(), idArray.end());
-        data.insert(data.end(), payload.begin(), payload.begin() + length);
+        data.insert(data.end(), payload.begin(), payload.begin() + payloadLength);
 
         setCommandData(SetDataRequest, data);
     }
 
     virtual ~CanDataPacket() = default;
 
+    /// @brief Returns the extended mode bit
+    /// @return A bool with the result
     bool extendedMode()
     {
         return (m_commandData.at(1) >> 7) & 0x1;
     }
 
+    /// @brief Returns the frame ID
+    /// @return An uint32_t with the result
     uint32_t id()
     {
         uint32_t value;
@@ -197,6 +228,8 @@ public:
         return value;
     }
 
+    /// @brief Returns the payload from the packet
+    /// @return A std::vector with the result
     std::vector<uint8_t> payload()
     {
         return std::vector<uint8_t>(m_commandData.begin() + 6, m_commandData.end());

@@ -12,7 +12,7 @@ TEST_CASE("Test CanPacket")
     SECTION("Test SetDataRequest")
     {
         // Test data from chapter 3.2 in DRPC-130 Programmer Reference Manual PDF
-        std::vector<uint8_t> data {0x00, 0x08, 0x00, 0x00, 0x07, 0x08, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38};
+        std::vector<uint8_t> data { 0x00, 0x08, 0x00, 0x00, 0x07, 0x08, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38 };
 
         CanPacket packet(CanPacket::Command::SetDataRequest, data);
 
@@ -25,7 +25,7 @@ TEST_CASE("Test CanPacket")
     SECTION("Test GetVersionResponse")
     {
         // Test data from chapter 3.7 in DRPC-130 Programmer Reference Manual PDF
-        std::vector<uint8_t> data {0x01, 0x00};
+        std::vector<uint8_t> data { 0x01, 0x00 };
 
         CanPacket packet(CanPacket::Command::GetVersionResponse, data);
 
@@ -38,7 +38,7 @@ TEST_CASE("Test CanPacket")
     SECTION("Test raw SetBaudRateResponse")
     {
         CanPacket packet;
-        std::vector<uint8_t> rawData {0x24, 0x43, 0x39, 0x0e, 0x00, 0x47, 0x0a, 0x0d};
+        std::vector<uint8_t> rawData { 0x24, 0x43, 0x39, 0x0e, 0x00, 0x47, 0x0a, 0x0d };
 
         for (const uint8_t data : rawData)
             packet.addData(data);
@@ -51,7 +51,7 @@ TEST_CASE("Test CanPacket")
     SECTION("Test raw ReceiveData")
     {
         CanPacket packet;
-        std::vector<uint8_t> rawData {0x24, 0x43, 0x36, 0x0e, 0x06, 0x00, 0x00, 0x00, 0x00, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0x00, 0x00, 0x97, 0x0a, 0x0d};
+        std::vector<uint8_t> rawData { 0x24, 0x43, 0x36, 0x0e, 0x06, 0x00, 0x00, 0x00, 0x00, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0x00, 0x00, 0x97, 0x0a, 0x0d };
 
         for (const uint8_t data : rawData)
             packet.addData(data);
@@ -77,7 +77,7 @@ TEST_CASE("Test CanDataPacket")
     uint32_t id = 0x01020304;
     bool extendedMode = true;
     static constexpr uint8_t length = 8;
-    std::array<uint8_t, 8> payload = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+    std::array<uint8_t, 8> payload = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
 
     CanDataPacket packet(extendedMode, length, id, payload);
 

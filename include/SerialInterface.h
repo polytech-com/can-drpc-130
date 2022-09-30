@@ -12,6 +12,10 @@ using SerialReadCallback = std::function<void(std::span<uint8_t>)>;
 
 class SerialInterface {
 public:
+    /// @brief Constructor
+    /// @param ioContext The io_context to be used
+    /// @param deviceName The serial device to be used
+    /// @param baudRate The baud rate for the serial communication
     SerialInterface(io_context& ioContext, std::string& deviceName, uint32_t baudRate)
         : m_serial(ioContext, deviceName)
     {
@@ -24,11 +28,15 @@ public:
 
     virtual ~SerialInterface() = default;
 
+    /// @brief Writes data on the serial
+    /// @param data A reference to a std::vector with the data to be sent
     void write(std::vector<uint8_t>& data)
     {
         boost::asio::write(m_serial, boost::asio::buffer(data.data(), data.size()));
     }
 
+    /// @brief Reads data from the serial
+    /// @param callback A SerialReadCallback callback to be called when data is available for reading
     void read(SerialReadCallback callback)
     {
         m_readCallback = callback;
