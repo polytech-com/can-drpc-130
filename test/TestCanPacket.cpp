@@ -74,12 +74,11 @@ TEST_CASE("Test CanBaudRatePacket")
 
 TEST_CASE("Test CanDataPacket")
 {
-    uint32_t id = 0x01020304;
     bool extendedMode = true;
-    static constexpr uint8_t length = 8;
+    uint32_t id = 0xAABBCCDD;
     std::array<uint8_t, 8> payload = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
 
-    CanDataPacket packet(extendedMode, length, id, payload);
+    CanDataPacket packet(extendedMode, payload.size(), id, payload);
 
     CHECK(packet.valid());
     CHECK(packet.command() == CanPacket::Command::SetDataRequest);

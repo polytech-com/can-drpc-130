@@ -5,10 +5,10 @@ The `can-drpc-130` tool can be used to bridge a virtual CAN device with the TTY 
 For the tool to work the following kernel options are needed:
 
 ```
-CONFIG_USB_ACM=y
 CONFIG_CAN=y
 CONFIG_CAN_RAW=y
 CONFIG_CAN_VCAN=y
+CONFIG_USB_ACM=y
 ```
 
 The tool can then be started by the following commands:
