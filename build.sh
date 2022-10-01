@@ -1,10 +1,14 @@
 #!/bin/bash
 
 if [ "$1" = "test" ]; then
-    mkdir -p .build-test; cd .build-test
-    cmake -DBUILD_TEST=1 .. && make -j $(nproc) && ctest -R can --verbose
+    mkdir -p .build-test && cd .build-test
+    cmake -DBUILD_TEST=1 .. && make -j $(nproc)
+
+    ctest -R can --verbose
+    lcov -q -c -d . -o total.info
+    lcov -q -r total.info "*usr/include/*" "*catch2*" "*test*" -o coverage.info
+    genhtml coverage.info
 else
-    source sdk/environment-setup-corei7-64-polytech-linux
-    mkdir -p .build; cd .build
+    mkdir -p .build && cd .build
     cmake .. && make -j $(nproc)
 fi

@@ -14,12 +14,15 @@ FetchContent_MakeAvailable(canary)
 find_package(Boost 1.70 COMPONENTS program_options REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
+add_compile_options(-Wall -Wextra -Werror -pedantic)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_link_libraries(${PROJECT_NAME} canary ${Boost_LIBRARIES})
+install(TARGETS ${PROJECT_NAME})
 
 if (BUILD_TEST)
     include(CTest)
+    add_compile_options(-coverage -O0)
 
     FetchContent_Declare(
         Catch2

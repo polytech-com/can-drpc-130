@@ -129,7 +129,7 @@ public:
 
     /// @brief Returns the checksum of the packet (mainly used for testing)
     /// @return An uint8_t with the checksum
-    const uint8_t checksum()
+    uint8_t checksum()
     {
         return m_crc.checksum();
     }
