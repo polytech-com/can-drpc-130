@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.11)
 project(can-drpc-130 CXX)
 
 include(FetchContent)
-include(cmake/clang-format.cmake)
 
 FetchContent_Declare(
     canary
@@ -22,6 +21,8 @@ install(TARGETS ${PROJECT_NAME})
 
 if (BUILD_TEST)
     include(CTest)
+    include(cmake/clang-format.cmake)
+
     add_compile_options(-coverage -O0)
 
     FetchContent_Declare(

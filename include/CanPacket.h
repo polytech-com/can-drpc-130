@@ -232,7 +232,7 @@ public:
     /// @return A std::vector with the result
     std::vector<uint8_t> payload()
     {
-        return std::vector<uint8_t>(m_commandData.begin() + 6, m_commandData.end());
+        return std::vector<uint8_t>(m_commandData.begin() + 2 + sizeof(id()), m_commandData.end());
     }
 };
 
