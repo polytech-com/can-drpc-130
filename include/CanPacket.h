@@ -14,7 +14,7 @@ class CanPacket {
 public:
     CanPacket() = default;
 
-    enum Command {
+    enum Command : uint8_t {
         SetBaudRateRequest = 0x42,
         SetBaudRateResponse = 0x39,
         SendDataRequest = 0x54,
@@ -29,7 +29,7 @@ public:
     /// @brief Constructor
     /// @param command The command to create
     /// @param commandData A reference to the data for the command
-    CanPacket(Command command, std::vector<uint8_t>& commandData)
+    CanPacket(Command command, const std::vector<uint8_t>& commandData)
     {
         setCommandData(command, commandData);
     }
@@ -49,13 +49,13 @@ public:
     /// @brief Sets the command data (alternative to constructor with arguments)
     /// @param command The command to create
     /// @param commandData A reference to the data for the command
-    void setCommandData(Command cmd, std::vector<uint8_t>& commandData)
+    void setCommandData(Command cmd, const std::vector<uint8_t>& commandData)
     {
         m_data.insert(m_data.end(), s_header.begin(), s_header.end());
-        m_data.push_back(cmd);
+        m_data.emplace_back(cmd);
         m_data.insert(m_data.end(), commandData.begin(), commandData.end());
         m_crc.process_bytes(m_data.data(), m_data.size());
-        m_data.push_back(m_crc.checksum());
+        m_data.emplace_back(m_crc.checksum());
         m_data.insert(m_data.end(), s_stop.begin(), s_stop.end());
     }
 
@@ -76,7 +76,7 @@ public:
         if (valid() || ((m_data.size() < s_header.size()) && (data != s_header.at(m_data.size()))))
             return;
 
-        m_data.push_back(data);
+        m_data.emplace_back(data);
     }
 
     /// @brief Returns the data
@@ -108,7 +108,7 @@ public:
     /// @return An uint8_t with the length
     uint8_t length() const
     {
-        uint8_t packetLength = s_packetLengthMin;
+        uint8_t packetLength { s_packetLengthMin };
 
         switch (command()) {
         case SetDataRequest:
@@ -142,8 +142,8 @@ public:
     }
 
 protected:
-    static constexpr uint8_t s_packetLengthMin = 6;
-    static constexpr uint8_t s_packetLengthMax = 33 + s_packetLengthMin;
+    static constexpr uint8_t s_packetLengthMin { 6 };
+    static constexpr uint8_t s_packetLengthMax { 33 + s_packetLengthMin };
     static constexpr std::array<uint8_t, 2> s_header = { 0x24, 0x43 };
     static constexpr std::array<uint8_t, 2> s_stop = { 0x0A, 0x0D };
 
@@ -195,14 +195,14 @@ public:
     /// @param payloadLength The length of the payload
     /// @param id The frame ID to be used
     /// @param payload The payload to be sent
-    CanDataPacket(bool extendedMode, uint8_t payloadLength, uint32_t id, std::array<uint8_t, 8>& payload)
+    CanDataPacket(bool extendedMode, uint8_t payloadLength, uint32_t id, const std::array<uint8_t, 8>& payload)
     {
         std::vector<uint8_t> data;
         std::array<uint8_t, 4> idArray;
         memcpy(idArray.data(), &id, idArray.size());
 
-        data.push_back(0);
-        data.push_back((extendedMode << 7) | payloadLength);
+        data.emplace_back(0);
+        data.emplace_back((extendedMode << 7) | payloadLength);
         data.insert(data.end(), idArray.begin(), idArray.end());
         data.insert(data.end(), payload.begin(), payload.begin() + payloadLength);
 
@@ -230,7 +230,7 @@ public:
 
     /// @brief Returns the payload from the packet
     /// @return A std::vector with the result
-    std::vector<uint8_t> payload()
+    const std::vector<uint8_t> payload()
     {
         return std::vector<uint8_t>(m_commandData.begin() + 2 + sizeof(id()), m_commandData.end());
     }
