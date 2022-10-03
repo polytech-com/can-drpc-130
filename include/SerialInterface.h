@@ -29,8 +29,8 @@ public:
     virtual ~SerialInterface() = default;
 
     /// @brief Writes data on the serial
-    /// @param data A reference to a std::vector with the data to be sent
-    void write(std::vector<uint8_t>& data)
+    /// @param data A std::vector with the data to be sent
+    void write(std::vector<uint8_t> data)
     {
         boost::asio::write(m_serial, boost::asio::buffer(data.data(), data.size()));
     }

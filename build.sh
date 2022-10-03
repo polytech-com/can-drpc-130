@@ -2,7 +2,7 @@
 
 if [ "$1" = "test" ]; then
     mkdir -p .build-test && cd .build-test
-    cmake -DBUILD_TEST=1 .. && make -j $(nproc)
+    cmake -DBUILD_TEST=1 .. && cmake --build . -j $(nproc)
 
     ctest -R can --verbose
     lcov -q -c -d . -o total.info
@@ -10,5 +10,5 @@ if [ "$1" = "test" ]; then
     genhtml coverage.info
 else
     mkdir -p .build && cd .build
-    cmake .. && make -j $(nproc)
+    cmake .. && cmake --build . -j $(nproc)
 fi

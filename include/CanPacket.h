@@ -80,8 +80,8 @@ public:
     }
 
     /// @brief Returns the data
-    /// @return An std::vector reference with the data
-    std::vector<uint8_t>& data()
+    /// @return An std::vector with the data
+    std::vector<uint8_t> data() const
     {
         return m_data;
     }
@@ -129,7 +129,7 @@ public:
 
     /// @brief Returns the checksum of the packet (mainly used for testing)
     /// @return An uint8_t with the checksum
-    uint8_t checksum()
+    uint8_t checksum() const
     {
         return m_crc.checksum();
     }
@@ -213,14 +213,14 @@ public:
 
     /// @brief Returns the extended mode bit
     /// @return A bool with the result
-    bool extendedMode()
+    bool extendedMode() const
     {
         return (m_commandData.at(1) >> 7) & 0x1;
     }
 
     /// @brief Returns the frame ID
     /// @return An uint32_t with the result
-    uint32_t id()
+    uint32_t id() const
     {
         uint32_t value;
         memcpy(&value, m_commandData.data() + 2, sizeof(value));
@@ -230,7 +230,7 @@ public:
 
     /// @brief Returns the payload from the packet
     /// @return A std::vector with the result
-    const std::vector<uint8_t> payload()
+    std::vector<uint8_t> payload() const
     {
         return std::vector<uint8_t>(m_commandData.begin() + 2 + sizeof(id()), m_commandData.end());
     }
