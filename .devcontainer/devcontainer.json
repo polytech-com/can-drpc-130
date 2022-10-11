@@ -1,0 +1,14 @@
+{
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"extensions":[
+		"ms-vscode.cpptools",
+		"ms-vscode.cmake-tools"
+	],
+	"settings": {
+		"cmake.configureArgs":[
+			"-DBUILD_TEST=ON"
+		]
+	}
+}
