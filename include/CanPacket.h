@@ -25,6 +25,7 @@ public:
         SetDataRequest = 0x58,
         SetDataResponse = 0x33,
         ReceiveData = 0x36,
+        SetMaskFilterRequest = 0x4d,
     };
 
     /// @brief Constructor
@@ -238,6 +239,22 @@ public:
     {
         return std::vector<uint8_t>(m_commandData.begin() + 2 + sizeof(id()), m_commandData.end());
     }
+};
+
+class CanMaskFilterPacket : public CanPacket {
+public:
+    CanMaskFilterPacket() = default;
+
+    /// @brief Constructor
+    /// @param extendedMode Use to select between normal or extended mode
+    CanMaskFilterPacket(bool extendedMode)
+    {
+        std::vector<uint8_t> data(33, 0);
+        data.back() = extendedMode << 7;
+        setCommandData(SetDataRequest, data);
+    }
+
+    virtual ~CanMaskFilterPacket() = default;
 };
 
 } // namespace Drpc130
