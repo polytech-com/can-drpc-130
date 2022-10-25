@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <boost/crc.hpp>
+#include <boost/endian/conversion.hpp>
 
 namespace Drpc130 {
 
@@ -199,6 +200,8 @@ public:
     {
         std::vector<uint8_t> data;
         std::array<uint8_t, 4> idArray;
+
+        boost::endian::native_to_big_inplace(id);
         memcpy(idArray.data(), &id, idArray.size());
 
         data.emplace_back(0);
@@ -224,6 +227,7 @@ public:
     {
         uint32_t value;
         memcpy(&value, m_commandData.data() + 2, sizeof(value));
+        boost::endian::big_to_native_inplace(value);
 
         return value;
     }
