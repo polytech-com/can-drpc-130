@@ -1,5 +1,6 @@
 // Copyright 2022 - Polytech A/S
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "CanPacket.h"
 
@@ -86,4 +87,14 @@ TEST_CASE("Test CanDataPacket")
     CHECK(packet.id() == id);
     CHECK(packet.payload().size() == payload.size());
     CHECK(std::equal(payload.begin(), payload.end(), packet.payload().begin()));
+}
+
+TEST_CASE("Test CanMaskFilterPacket")
+{
+    auto extendedMode = GENERATE(true, false);
+    CanMaskFilterPacket packet(extendedMode);
+
+    CHECK(packet.valid());
+    CHECK(packet.command() == CanPacket::Command::SetMaskFilterRequest);
+    CHECK(packet.commandData().at(32) == (extendedMode << 7));
 }

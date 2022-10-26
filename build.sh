@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [ "$1" = "test" ]; then
     mkdir -p .build-test && cd .build-test

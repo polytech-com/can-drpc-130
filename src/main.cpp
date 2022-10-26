@@ -15,12 +15,14 @@ int main(int argc, char** argv)
     std::string baudRate;
     std::string canDevice;
     std::string serialDevice;
+    bool extendedMode { false };
 
     boost::program_options::options_description desc("Allowed options");
     // clang-format off
     desc.add_options()("can,c", boost::program_options::value(&canDevice)->default_value("vcan0"),
         "Virtual CAN device")("baud,b", boost::program_options::value(&baudRate)->default_value("500000"),
         "CAN baud rate in bit/s")("serial,s", boost::program_options::value(&serialDevice)->default_value("ttyACM0"),
+        "Use Extended CAN frames")("extended,e", boost::program_options::bool_switch(&extendedMode),
         "Serial CAN device")("help,h", "Help message");
     // clang-format on
     boost::program_options::variables_map vm;
@@ -45,7 +47,7 @@ int main(int argc, char** argv)
     serial.write(baudRatePacket.data());
 
     // Start the async read on the serial interface
-    serial.read([&packet, &can, &serial](std::span<uint8_t> buffer) {
+    serial.read([&packet, &can, &serial, &extendedMode](std::span<uint8_t> buffer) {
         for (const uint8_t data : buffer) {
             packet.addData(data);
             if (packet.valid()) {
@@ -64,6 +66,11 @@ int main(int argc, char** argv)
                     std::vector<uint8_t> data;
                     CanPacket sendDataPacket(CanPacket::Command::SendDataRequest, data);
                     serial.write(sendDataPacket.data());
+                    break;
+                }
+                case CanPacket::Command::SetBaudRateResponse: {
+                    CanMaskFilterPacket maskFilterPacket(extendedMode);
+                    serial.write(maskFilterPacket.data());
                     break;
                 }
                 default:
