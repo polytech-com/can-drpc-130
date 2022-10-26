@@ -114,6 +114,9 @@ public:
         uint8_t packetLength { s_packetLengthMin };
 
         switch (command()) {
+        case SetMaskFilterRequest:
+            packetLength += 33;
+            break;
         case SetDataRequest:
         case ReceiveData:
             packetLength += 14;

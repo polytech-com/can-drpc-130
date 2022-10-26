@@ -55,7 +55,6 @@ int main(int argc, char** argv)
                 case CanPacket::Command::ReceiveData: {
                     SocketCanFrame frame;
                     auto payload = packet.payload();
-                    printf("extendedMode = %d\n", packet.extendedMode());
                     frame.header.extended_format(packet.extendedMode());
                     frame.header.id(packet.id());
                     frame.header.payload_length(payload.size());
@@ -85,7 +84,6 @@ int main(int argc, char** argv)
 
     // Start the async read on the CAN interface
     can.read([&serial](SocketCanFrame& frame) {
-        printf("frame.header.extended_format() = %d\n", frame.header.extended_format());
         CanDataPacket packet(frame.header.extended_format(), frame.header.payload_length(),
             frame.header.id(), frame.payload);
         serial.write(packet.data());
