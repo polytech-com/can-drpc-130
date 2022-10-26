@@ -26,6 +26,7 @@ public:
         SetDataResponse = 0x33,
         ReceiveData = 0x36,
         SetMaskFilterRequest = 0x4d,
+        SetMaskFilterResponse = 0x34,
     };
 
     /// @brief Constructor
@@ -193,7 +194,7 @@ public:
     CanDataPacket() = default;
 
     /// @brief Constructor
-    /// @param extendedMode Use to select between normal or extended mode
+    /// @param extendedMode Use normal or extended mode
     /// @param payloadLength The length of the payload
     /// @param id The frame ID to be used
     /// @param payload The payload to be sent
@@ -246,12 +247,12 @@ public:
     CanMaskFilterPacket() = default;
 
     /// @brief Constructor
-    /// @param extendedMode Use to select between normal or extended mode
+    /// @param extendedMode Use normal or extended mode
     CanMaskFilterPacket(bool extendedMode)
     {
         std::vector<uint8_t> data(33, 0);
         data.back() = extendedMode << 7;
-        setCommandData(SetDataRequest, data);
+        setCommandData(SetMaskFilterRequest, data);
     }
 
     virtual ~CanMaskFilterPacket() = default;
