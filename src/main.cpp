@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     std::string baudRate;
     std::string canDevice;
     std::string serialDevice;
-    bool extendedMode = false;
+    bool extendedMode { false };
 
     boost::program_options::options_description desc("Allowed options");
     // clang-format off
