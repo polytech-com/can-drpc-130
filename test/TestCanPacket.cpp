@@ -91,7 +91,7 @@ TEST_CASE("Test CanDataPacket")
 
 TEST_CASE("Test CanMaskFilterPacket")
 {
-    auto extendedMode = GENERATE(true);
+    auto extendedMode = GENERATE(true, false);
     CanMaskFilterPacket packet(extendedMode);
 
     CHECK(packet.valid());
