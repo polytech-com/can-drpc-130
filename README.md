@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/polytech-com/can-drpc-130/actions/workflows/ci.yml/badge.svg)](https://github.com/polytech-com/can-drpc-130/actions/workflows/ci.yml)
 
-The `can-drpc-130` tool can be used to bridge a virtual CAN device with the TTY device of the CAN serial port on a [IEI DRPC-130](https://www.ieiworld.com/en/product/model.php?II=598). It implements the MCU protocol needed for sending and receiving CAN packets from the dual CAN D-Sub9 female connector.
+The `can-drpc-130` tool can be used to bridge a virtual CAN device with the TTY device of the CAN serial port on an IEI [DRPC-130](https://www.ieiworld.com/en/product/model.php?II=598). It implements the MCU protocol needed for sending and receiving CAN packets from the dual CAN D-Sub9 female connector. Unfortunately the [DRPC-130](https://www.ieiworld.com/en/product/model.php?II=598) does not support [slcan](https://github.com/linux-can/can-utils) by which this tool would not have been needed.
 
 For the tool to work the following kernel options are needed:
 
